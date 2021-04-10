@@ -72,7 +72,7 @@ def levene_var(*args, alpha=0.05, verbose=1):
 
 
     if verbose > 0:
-        print('p-value of Hypothesis "Distributions in input :"', p_levene)
+        print('p-value of Hypothesis "Variances are equal:"', p_levene)
 
     if p_levene < alpha:
         if verbose > 0:
@@ -85,11 +85,7 @@ def levene_var(*args, alpha=0.05, verbose=1):
         return False
 
 
-
-
-
-# TODO: Fix this shit
-def mood_var(a, b, alpha=0.05):
+def mood_var(a, b, alpha=0.05, verbose=1):
     """
     Критерий равенства дисперсий Муда. Работает для выборок разных размеров, на количественных и порядковых данных.
     Не требует нормальности распределения выборок.
@@ -103,35 +99,125 @@ def mood_var(a, b, alpha=0.05):
     которая в пределе сходится к нормальному распределению. Иначе возвращается обычная статистика
     """
 
-    n = len(a)
-    m = len(b)
+    mood_stat, p_value = st.mood(a, b)
 
-    # Sort and rank
-    a_dict = {'a'+str(i+1): v for i, v in zip(range(n), a)}
-    b_dict = {'b'+str(i+1): v for i, v in zip(range(m), b)}
-    a_dict.update(b_dict)
-    a_dict = sorted(a_dict.items(), key=itemgetter(1))
+    if verbose > 0:
+        print('p-value of Hypothesis "Variances are equal:"', p_value)
 
-    rank_dict = {k: r for k, r in a_dict}
+    if p_value < alpha:
+        if verbose > 0:
+            print("Samples do not have same variance")
+        return True
 
-    rank_list = []
-    for k, v in rank_dict.items():
-        if n <= m and 'a' in k:
-            rank_list.append(v)
+    else:
+        if verbose > 0:
+            print("Samples have same variance")
+        return False
 
-        elif n > m and 'b' in k:
-            rank_list.append(v)
+def independent_ttest(a, b, alpha=0.05, verbose=1, log=False, **kwargs):
 
-    mood_stat = np.sum((np.array(rank_list) - (m+n+1) / 2) ** 2)
+    if log == False:
+        stat, p_value = st.ttest_ind(a, b, **kwargs)
 
-    # Only when n > 10 and m > 10
-    mood_stat_adjoint = (
-            (mood_stat - m * (m+n+1) * (m+n-1) / 12 + 0.5) /
-            (np.sqrt(m * n * (m+n+1) * (m+n+2) * (m+n-2)) / 180)
-                         )
+    else:
+        stat, p_value = st.ttest_ind(np.log(a), np.log(b), **kwargs)
 
-    if n > 10 and m > 10:
-        return mood_stat_adjoint
+    if verbose > 0:
+        print('p-value of null Hypothesis being wrong', p_value)
 
-    return mood_stat
+    if p_value < alpha:
+        if verbose > 0:
+            print("Reject null Hypothesis")
+        return True
 
+    else:
+        if verbose > 0:
+            print("Can not reject null Hypothesis")
+        return False
+
+
+def mann_whitneyu_test(a, b, alpha=0.05, verbose=1, **kwargs):
+
+    stat, p_value = st.mannwhitneyu(a, b, **kwargs)
+
+    if verbose > 0:
+        print('p-value of null Hypothesis being wrong', p_value)
+
+    if p_value < alpha:
+        if verbose > 0:
+            print("Reject null Hypothesis")
+        return True
+
+    else:
+        if verbose > 0:
+            print("Can not reject null Hypothesis")
+        return False
+
+
+# @njit
+def lift(before, after):
+
+    return (np.sum(before) + np.sum(after)) / np.sum(before) * 100
+
+
+# @njit
+def bootstrap(data, sample_num, sample_size):
+    res = np.array([])
+    for i in range(sample_num):
+        sample_mean = np.mean(np.random.choice(data, size=sample_size))
+        res = np.append(res, sample_mean)
+
+    return res
+
+
+def kruskal_wallis(*args, nan_policy='propagate', alpha=0.05, verbose=1):
+
+    stat, p_value = st.kruskal(*args, nan_policy=nan_policy)
+
+    if verbose > 0:
+        print('p-value of null Hypothesis being wrong', p_value)
+
+    if p_value < alpha:
+        if verbose > 0:
+            print("Reject null Hypothesis")
+        return True
+
+    else:
+        if verbose > 0:
+            print("Can not reject null Hypothesis")
+        return False
+
+
+def z_test_ratio(successes1, successes2, trials1, trials2, alpha=0.05, verbose=1):
+    """
+    Z-test for binary variable. Null hypothesis H0: ratio in two groups is equal.
+
+    :param successes1: (list), successes in first group
+    :param successes2: (list), successes in second group
+    :param trials1: (list), all trials in first group
+    :param trials2: (list), all trials in first group
+    :param alpha: (float, optional, default=0.05), alpha level to reject H0
+    :param verbose: (int, optional, default=1), whether to print results
+    :return: (bool), whether to reject H0
+    """
+
+    p1 = successes1 / trials1
+    p2 = successes2 / trials2
+
+    p_combined = (successes1 + successes2) / (trials1 + trials2)
+    distr = st.norm(0, 1)
+    z_value = (p1 - p2) / np.sqrt(p_combined * (1 - p_combined) * (1 / trials1 + 1 / trials2))
+
+    p_value = (1 - distr.cdf(abs(z_value))) * 2
+
+    if verbose > 0:
+        print('p-value: ', p_value)
+
+    if p_value < alpha:
+        if verbose > 0:
+            print("Reject null hypothesis, ratio in groups has statistically significant difference")
+        return True
+    else:
+        if verbose > 0:
+            print("Can not eject null hypothesis, ratio in groups has no statistically significant difference")
+        return False
