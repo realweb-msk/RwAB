@@ -23,11 +23,11 @@ def normality_test(data, alpha=0.05, verbose=1):
 
     else:
         if verbose > 0:
-            print("Data is distributed normally")
+            print("Data is not distributed normally")
         return False
 
 # @njit
-def fisher_disp(a, b, alpha=0.05):
+def fisher_var(a, b, alpha=0.05):
     """
     Параметрический критерий Фишера для определения равенства дисперсий. В пределе сходится к распределению фишера.
     F(n-1, m-1), где m, n объемы выборок a, b соотв.
@@ -54,12 +54,11 @@ def fisher_disp(a, b, alpha=0.05):
     else:
         fisher_stat = s2/s1
 
-    print(s1, s2)
     return fisher_stat
 
 
 # @njit
-def levene_disp(a, b, alpha=0.05):
+def levene_var(*args, alpha=0.05, verbose=1):
     """
     Параметрический критерий Левене равенства двух дисперсий. В пределе сходится к распределению Фишера.
     F(1, m+n-2) где m, n объемы выборок a, b соотв.
@@ -69,30 +68,28 @@ def levene_disp(a, b, alpha=0.05):
     :param alpha: (float, optional, default=0.05), alpha-level to reject null hypothesis
     :return:
     """
-    # a = np.array(a)
-    # b = np.array(b)
-    n = len(a)
-    m = len(b)
+    stat_levene, p_levene = st.levene(*args)
 
-    z_a = np.abs(a - np.mean(a))
-    z_b = np.abs(b - np.mean(b))
 
-    z_a_mean = np.mean(z_a)
-    z_b_mean = np.mean(z_b)
-    z_a_b_mean = 1/(n+m) * (np.sum(z_a) + np.sum(z_b))
+    if verbose > 0:
+        print('p-value of Hypothesis "Distributions in input :"', p_levene)
 
-    levene_stat = ((n+m-2) *
-         (n*(z_a_mean-z_a_b_mean)**2 + m*(z_b_mean-z_b_mean)) /
-         (np.sum((z_a-z_a_mean) ** 2) + np.sum((z_b-z_b_mean) ** 2))
-         )
+    if p_levene < alpha:
+        if verbose > 0:
+            print("Samples do not have same variance")
+        return True
 
-    return levene_stat
+    else:
+        if verbose > 0:
+            print("Samples have same variance")
+        return False
+
 
 
 
 
 # TODO: Fix this shit
-def mood_disp(a, b, alpha=0.05):
+def mood_var(a, b, alpha=0.05):
     """
     Критерий равенства дисперсий Муда. Работает для выборок разных размеров, на количественных и порядковых данных.
     Не требует нормальности распределения выборок.
