@@ -28,6 +28,16 @@ def normality_test(data, alpha=0.05, verbose=1):
 
 # @njit
 def fisher_disp(a, b, alpha=0.05):
+    """
+    Параметрический критерий Фишера для определения равенства дисперсий. В пределе сходится к распределению фишера.
+    F(n-1, m-1), где m, n объемы выборок a, b соотв.
+    Требует количественных данных и нормально распределенных выборок.
+
+    :param a:
+    :param b:
+    :param alpha:
+    :return:
+    """
 
     "F = s1/s2, s1>=s2"
     # a = np.array(a)
@@ -39,18 +49,26 @@ def fisher_disp(a, b, alpha=0.05):
     s2 = 1/(m-1) * np.sum((a - np.mean(b))**2)
 
     if s1 >= s2:
-        F = s1/s2
+        fisher_stat = s1/s2
 
     else:
-        F = s2/s1
+        fisher_stat = s2/s1
 
     print(s1, s2)
-    return F
+    return fisher_stat
 
 
 # @njit
 def levene_disp(a, b, alpha=0.05):
-
+    """
+    Параметрический критерий Левене равенства двух дисперсий. В пределе сходится к распределению Фишера.
+    F(1, m+n-2) где m, n объемы выборок a, b соотв.
+    Требует количественных данных и нормально распределенных выборок.
+    :param a: (list), First sample
+    :param b: (list), Second sample
+    :param alpha: (float, optional, default=0.05), alpha-level to reject null hypothesis
+    :return:
+    """
     # a = np.array(a)
     # b = np.array(b)
     n = len(a)
@@ -63,14 +81,17 @@ def levene_disp(a, b, alpha=0.05):
     z_b_mean = np.mean(z_b)
     z_a_b_mean = 1/(n+m) * (np.sum(z_a) + np.sum(z_b))
 
-    w = ((n+m-2) *
+    levene_stat = ((n+m-2) *
          (n*(z_a_mean-z_a_b_mean)**2 + m*(z_b_mean-z_b_mean)) /
          (np.sum((z_a-z_a_mean) ** 2) + np.sum((z_b-z_b_mean) ** 2))
          )
 
-    return w
+    return levene_stat
 
 
+
+
+# TODO: Fix this shit
 def mood_disp(a, b, alpha=0.05):
     """
     Критерий равенства дисперсий Муда. Работает для выборок разных размеров, на количественных и порядковых данных.
@@ -89,8 +110,8 @@ def mood_disp(a, b, alpha=0.05):
     m = len(b)
 
     # Sort and rank
-    a_dict = {'a'+str(i): v for i, v in zip(range(n), a)}
-    b_dict = {'b'+str(i): v for i, v in zip(range(m), b)}
+    a_dict = {'a'+str(i+1): v for i, v in zip(range(n), a)}
+    b_dict = {'b'+str(i+1): v for i, v in zip(range(m), b)}
     a_dict.update(b_dict)
     a_dict = sorted(a_dict.items(), key=itemgetter(1))
 
@@ -116,5 +137,4 @@ def mood_disp(a, b, alpha=0.05):
         return mood_stat_adjoint
 
     return mood_stat
-
 
