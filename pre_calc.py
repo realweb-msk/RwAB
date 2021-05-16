@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[14]:
-
-
 # Математика-статистика
 import statsmodels as st# Должно быть хотя бы 0.12.1
 s_v = statsmodels.__version__.split('.')
@@ -401,12 +395,3 @@ def lifts_weeks_graph(baseline_sessions,
     fig.update_xaxes(title_text="Недели~", row=1, col=1, range=[0,max_weeks])
     fig.update_yaxes(title_text="(A-B)/std", row=1, col=1, range=[0, max(lifts)])
     fig.show()
-  
-  
-
-
-# In[ ]:
-
-
-
-
