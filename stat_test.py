@@ -114,6 +114,7 @@ def mood_var(a, b, alpha=0.05, verbose=1):
             print("Samples have same variance")
         return False
 
+
 def independent_ttest(a, b, alpha=0.05, verbose=1, log=False, **kwargs):
 
     if log == False:
@@ -128,12 +129,12 @@ def independent_ttest(a, b, alpha=0.05, verbose=1, log=False, **kwargs):
     if p_value < alpha:
         if verbose > 0:
             print("Reject null Hypothesis")
-        return True
 
     else:
         if verbose > 0:
             print("Can not reject null Hypothesis")
-        return False
+
+    return p_value
 
 
 def mann_whitneyu_test(a, b, alpha=0.05, verbose=1, **kwargs):
@@ -146,18 +147,17 @@ def mann_whitneyu_test(a, b, alpha=0.05, verbose=1, **kwargs):
     if p_value < alpha:
         if verbose > 0:
             print("Reject null Hypothesis")
-        return True
 
     else:
         if verbose > 0:
             print("Can not reject null Hypothesis")
-        return False
+    return p_value
 
 
 # @njit
 def lift(before, after):
 
-    return (np.sum(before) + np.sum(after)) / np.sum(before) * 100
+    return (np.sum(after) - np.sum(before)) / np.sum(before)
 
 
 # @njit

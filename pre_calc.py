@@ -1,5 +1,5 @@
 # Математика-статистика
-import statsmodels as st# Должно быть хотя бы 0.12.1
+import statsmodels as st # Должно быть хотя бы 0.12.1
 s_v = statsmodels.__version__.split('.')
 if (float(s_v[1])==12 and float(s_v[2])<1) or (float(s_v[1])<12):
     get_ipython().system('pip install statsmodels --upgrade')
