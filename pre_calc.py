@@ -1,36 +1,24 @@
 # Математика-статистика
-import statsmodels as st # Должно быть хотя бы 0.12.1
 s_v = statsmodels.__version__.split('.')
 if (float(s_v[1])==12 and float(s_v[2])<1) or (float(s_v[1])<12):
     get_ipython().system('pip install statsmodels --upgrade')
-    import statsmodels as st
     s_v = statsmodels.__version__.split('.')
     if (float(s_v[1])==12 and float(s_v[2])<1) or (float(s_v[1])<12):
         print('statsmodels needs to be at least v0.12.1')
 
-from scipy import stats # импорт блока статистики
 import numpy as np # для работы с данными
-import math 
 import pandas as pd # для обработки данных
 import statsmodels.stats.proportion as stp
 import statsmodels.stats.power as power
 from statsmodels.stats.weightstats import ttest_ind
-from scipy.stats import norm, binom
-from sklearn.linear_model import LinearRegression 
+from sklearn.linear_model import LinearRegression
 
-import stat_test
+from core import stat_test
 
 # Визуализация
-import matplotlib.pyplot as plt 
-import seaborn as sns
-import plotly.express as px
 from plotly import graph_objects as go
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Rectangle
-
 
 # ускорение вычислений
-from numba import jit, njit
 
 from plotly.subplots import make_subplots
 import plotly
@@ -41,7 +29,7 @@ cols = plotly.colors.DEFAULT_PLOTLY_COLORS
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir) """
-import stat_test
+
 
 def monte_carlo_power_2(baseline_data, weekly_sessions, effect_size, N,
                       alpha=0.05, power=0.8,
@@ -71,12 +59,12 @@ def monte_carlo_power_2(baseline_data, weekly_sessions, effect_size, N,
       significance_results.append(test_result[1] <= alpha)
     elif method=='Kruskal-Wallis':
       test_result = stat_test.kruskal_wallis(control_data, variant_data, alpha=alpha,
-                                   verbose=0)
+                                             verbose=0)
       # Test for significance
       significance_results.append(test_result)
     elif method=='Mann-Whitney':
       test_result = stat_test.mann_whitneyu_test(control_data, variant_data, alpha=alpha,
-                                   verbose=0)
+                                                 verbose=0)
       # Test for significance
       significance_results.append(test_result)
     """elif method=='Mood':

@@ -1,6 +1,6 @@
 from itertools import combinations
 import pandas as pd
-from stat_test import *
+from core.stat_test import *
 
 
 def compute_results(grouped_data, id_col, experiment_var_col, metrics, alpha=0.05):
