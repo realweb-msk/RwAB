@@ -1,4 +1,4 @@
-from google.cloud import bigquery
+#from google.cloud import bigquery
 import pandas as pd
 
 #source - принимает 2 значения: GA или OWOX. fullTableName -полное название таблички с данными 
@@ -72,8 +72,7 @@ def query(source,fullTableName,start,end,*conditions):
         AND {}'''.format(fullTableName,start,end,fullTableName,start,end,my_string)
         #results = sql.result()
     elif (source=="OWOX"):
-        query=
-        '''with meow as (
+        query='''with meow as (
         select sessionid 
         ,max(hits.time)/1000 as duration 
         ,max(totals.pageviews) as pageviews 
@@ -139,5 +138,14 @@ def access (way_to_json, project_id, query=query):
     df = pd.read_gbq(query, project_id=project_id, credentials=credentials, dialect='standard')
 
 #df- табличка с данными; fn - метрика для группера; col_name - колонка для метрики; *groups - перечисление столбцов для group by
-def grouper(df=df,fn,col_name,*groups):
-    df.groupby([groups])[col_name].fn()
+def grouper(df,*groups,**funs):
+    a=[*groups]
+    out = {}
+    for k, v in funs.items():
+        if isinstance(v, list):
+            for x in v:
+                out[x] = k
+        else:
+            out[v] = k
+    data_total = df.groupby(a, as_index=False).agg(out)
+    print(data_total)
