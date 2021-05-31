@@ -1,4 +1,6 @@
-#from google.cloud import bigquery
+import google.auth
+from google.oauth2 import service_account
+from google.cloud import bigquery
 import pandas as pd
 
 #source - принимает 2 значения: GA или OWOX. fullTableName -полное название таблички с данными
