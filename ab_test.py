@@ -3,7 +3,7 @@ import pandas as pd
 from core.stat_test import *
 
 
-def compute_results(grouped_data, id_col, experiment_var_col, metrics, alpha=0.05):
+def compute_results(grouped_data, id_col, experiment_var_col, metrics, alpha=0.05, show_total=True):
     variants = grouped_data[experiment_var_col].unique()
     dfs_vars = {}
 
@@ -54,6 +54,14 @@ def compute_results(grouped_data, id_col, experiment_var_col, metrics, alpha=0.0
                                                                         np.log(df_2[metric]), alpha=alpha)
             except:
                 raise
+
+    if show_total:
+        total_sum = grouped_data.groupby(experiment_var_col, as_index=False)[metrics].sum()\
+            .rename(columns={metric: metric+'_sum' for metric in metrics})
+        total_mean = grouped_data.groupby(experiment_var_col, as_index=False)[metrics].mean()\
+            .rename(columns={metric: metric+'_mean' for metric in metrics})
+        total = total_sum.merge(total_mean, left_on=experiment_var_col, right_on=experiment_var_col)
+        return res, total
 
     return res
 
