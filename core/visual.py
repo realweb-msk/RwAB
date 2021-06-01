@@ -27,12 +27,12 @@ class ShowPlots:
         for comb in vars_comb:
             df_1 = df.query(f"{variant_col} == {comb[0]}").reset_index(drop=True)
             df_2 = df.query(f"{variant_col} == {comb[1]}").reset_index(drop=True)
-            plt_data = df_2[metric].cumsum() - df_1[metric].cumsum()
+            plt_data = (df_2[metric].cumsum() - df_1[metric].cumsum()) / df_1[metric].cumsum() * 100
             figures.append(go.Scatter(y=plt_data, x=df_1[date_col],
                                       name=f"{metric} lift variant {comb[1]} vs {comb[0]}"))
 
         fig = go.Figure(figures)
-        fig.update_layout(title=f"Lift of cumulative sum of {metric} between groups")
+        fig.update_layout(title=f"Relative lift of cumulative sum of {metric} between groups")
         fig.show()
 
         return
@@ -63,17 +63,19 @@ class ShowPlots:
             )
             # Conf. intervals
             figures.append(go.Scatter(
-                y=rolling_mean * .95,
+                y=rolling_mean * 1.05,
                 x=d.sort_values(by=date_col)[date_col],
-                line={'dash': 'longdashdot'},
-                name=f'Conf. interval upper bound {rolling_period} variant {var}')
+                line=dict(color='rgba(0,0,0,0)'),
+                name=f'Conf. interval lower bound {rolling_period} variant {var}')
             )
 
             figures.append(go.Scatter(
-                y=rolling_mean * 1.05,
+                y=rolling_mean * .95,
                 x=d.sort_values(by=date_col)[date_col],
-                line={'dash': 'longdashdot'},
-                name=f'Conf. interval lower bound {rolling_period} variant {var}')
+                line=dict(color='rgba(0,0,0,0)'),
+                fill='tonexty',
+                fillcolor='rgba(176, 228, 255, 0.56)',
+                name=f'Conf. interval upper bound {rolling_period} variant {var}')
             )
 
         fig = go.Figure(figures)
