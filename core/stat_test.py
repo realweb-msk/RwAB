@@ -4,7 +4,7 @@ from operator import itemgetter
 from numba import njit
 
 
-def normality_test(data, alpha=0.05, verbose=1):
+def normality_test(data, alpha=0.05, verbose=0):
     """
     Performs shapiro-wilk normality test https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test
 
@@ -58,7 +58,7 @@ def fisher_var(a, b, alpha=0.05):
 
 
 # @njit
-def levene_var(*args, alpha=0.05, verbose=1):
+def levene_var(*args, alpha=0.05, verbose=0):
     """
     Параметрический критерий Левене равенства двух дисперсий. В пределе сходится к распределению Фишера.
     F(1, m+n-2) где m, n объемы выборок a, b соотв.
@@ -115,7 +115,7 @@ def mood_var(a, b, alpha=0.05, verbose=1):
         return False
 
 
-def independent_ttest(a, b, alpha=0.05, verbose=1, log=False, **kwargs):
+def independent_ttest(a, b, alpha=0.05, verbose=0, log=False, **kwargs):
 
     if log == False:
         stat, p_value = st.ttest_ind(a, b, **kwargs)
@@ -137,7 +137,7 @@ def independent_ttest(a, b, alpha=0.05, verbose=1, log=False, **kwargs):
     return p_value
 
 
-def mann_whitneyu_test(a, b, alpha=0.05, verbose=1, **kwargs):
+def mann_whitneyu_test(a, b, alpha=0.05, verbose=0, **kwargs):
 
     stat, p_value = st.mannwhitneyu(a, b, **kwargs)
 
@@ -170,7 +170,7 @@ def bootstrap(data, sample_num, sample_size):
     return res
 
 
-def kruskal_wallis(*args, nan_policy='propagate', alpha=0.05, verbose=1):
+def kruskal_wallis(*args, nan_policy='propagate', alpha=0.05, verbose=0):
 
     stat, p_value = st.kruskal(*args, nan_policy=nan_policy)
 
@@ -188,7 +188,7 @@ def kruskal_wallis(*args, nan_policy='propagate', alpha=0.05, verbose=1):
         return False
 
 
-def z_test_ratio(successes1, successes2, trials1, trials2, alpha=0.05, verbose=1):
+def z_test_ratio(successes1, successes2, trials1, trials2, alpha=0.05, verbose=0):
     """
     Z-test for binary variable. Null hypothesis H0: ratio in two groups is equal.
 

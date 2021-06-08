@@ -1,10 +1,21 @@
 from google.cloud import bigquery # импорт сервисов google cloud
 from google.oauth2 import service_account # импорт сервисов по аунтефикации
-import pandas as pd
 
 
 def query(source, table_name, start_date, end_date, experiment_id, events=None, custom_dimensions=None):
+    """
+    Функция получения данных в дефолтных разрезах из данных стриминга GA в BQ.
+    Подробнее про схему читайте в https://github.com/realweb-msk/RwAB
 
+    :param source:
+    :param table_name:
+    :param start_date:
+    :param end_date:
+    :param experiment_id:
+    :param events:
+    :param custom_dimensions:
+    :return:
+    """
     event_string = ''''''
     if events is not None:
         for event, list_ in events.items():
@@ -62,7 +73,7 @@ def query(source, table_name, start_date, end_date, experiment_id, events=None, 
     TIMESTAMP(PARSE_DATE('%Y%m%d', date)) AS date,
     clientid AS client_id,
     device.deviceCategory AS device,
-    geoNetwork.region AS reggion,
+    geoNetwork.region AS region,
     
     -- Метрики
     MAX(experimentVariant) AS experimentVariant,
@@ -95,17 +106,3 @@ def get_from_bq(path_to_json_creds, project_id, sql_query):
     results = query_job.result().to_dataframe()
 
     return results
-
-
-#df- табличка с данными; fn - метрика для группера; col_name - колонка для метрики; *groups - перечисление столбцов для group by
-def grouper(df, *groups, **funs):
-    a=[*groups]
-    out = {}
-    for k, v in funs.items():
-        if isinstance(v, list):
-            for x in v:
-                out[x] = k
-        else:
-            out[v] = k
-    data_total = df.groupby(a, as_index=False).agg(out)
-    print(data_total)
