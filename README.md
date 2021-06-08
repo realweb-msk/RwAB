@@ -40,3 +40,21 @@ r.head()
 
 Аналогично при помощи параметра `custom_dimensions` возможно добавить статистику
 по пользовательским переменным.
+
+## Пайплайн анализа результатов A/B теста
+Для быстрой работы с результатами A/B тестов используется класс 
+`ab_test.Pipeline`
+
+```python
+from ab_test import Pipeline
+
+p = Pipeline(r)
+res, tot = p.pipeline('client_id', ['device', 'visitor_type'], {'transactionRevenue': 'sum'}, 'experimentVariant')
+res.head()
+```
+<img width="855" alt="Снимок экрана 2021-06-08 в 10 20 43" src="https://user-images.githubusercontent.com/60659176/121141022-30ade980-c843-11eb-9500-97df7ee921cd.png">
+
+```python
+tot.head()
+```
+<img width="589" alt="Снимок экрана 2021-06-08 в 10 21 30" src="https://user-images.githubusercontent.com/60659176/121141124-4c18f480-c843-11eb-8bb0-25e53cdaed9e.png">
