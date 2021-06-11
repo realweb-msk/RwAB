@@ -8,13 +8,15 @@ def query(source, table_name, start_date, end_date, experiment_id, events=None, 
     Подробнее про схему читайте в https://github.com/realweb-msk/RwAB
 
     :param source:
-    :param table_name:
-    :param start_date:
-    :param end_date:
-    :param experiment_id:
-    :param events:
-    :param custom_dimensions:
-    :return:
+    :param table_name: (str), Название таблицы BQ в формате: projectID.datasetID
+    :param start_date: (str), Начальная дата в формате YYYYmmdd
+    :param end_date:(str), Конечная дата в формате YYYYmmdd
+    :param experiment_id: (str), ID эксперимента
+    :param events: (dict, optional, default=None), Словарь с дополнительными событиями. Словарь формата:
+        {'field_name': ['eventAction', 'eventCategory']}, например: {'pep': ['Ecom', 'Click']}
+    :param custom_dimensions: (dict, optional, default=None), Словарь с пользовательскими параметрами. Словарь формата:
+        {'field_name': [customDimensionIndex(int), level ('hits', 'session', 'user')}
+    :return: query - строка с запросом для BQ
     """
     event_string = ''''''
     if events is not None:

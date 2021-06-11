@@ -6,10 +6,17 @@ import numpy as np
 
 class Pipeline:
     def __init__(self, df, verbose=0):
+        """
+        Класс для анализа результатов АБ-теста
+        :param df: (pandas.DataFrame), Датафрейм с данными по A/B тесту. По дефолту ожидаются данные, полученные при
+        помощи core.get_data.query, но возможно работать со своими данными похожей конфигурации
+        :param verbose:
+        """
         self.df = df
 
     @staticmethod
     def grouper(df, groupby_col, experiment_variant_col, group, metric_aggregations):
+
         for var in df[group].unique():
             temp = df.query(f"{group} == '{var}'")
             temp = temp.groupby([groupby_col, experiment_variant_col], as_index=False).agg(metric_aggregations)
@@ -18,6 +25,17 @@ class Pipeline:
 
     @staticmethod
     def compute_results(grouped_data, experiment_var_col, metrics, alpha=0.05, show_total=True):
+        """
+        Функция для расчета попарных результатов A/B теста для групп
+
+        :param grouped_data: (pandas.DataFrame), Сгруппированный датафрейм
+        :param experiment_var_col: (str), Имя столбца с вариантом эксперимента
+        :param metrics: (iterable), Названия столбцов с метриками, которые будут сравниваться
+        :param alpha: (float, optional, default=0.05), alpha-value для статистических тестов
+        :param show_total: (bool, optional, default=True), Выводить ли датафрейм с общей статистикой
+        :return: При show_total=True, возвращает tuple из двух датафреймов: res и tot, res - с результатами
+        эксперимента, при show_total=False возвращает только res
+        """
         variants = grouped_data[experiment_var_col].unique()
         dfs_vars = {}
 
@@ -81,6 +99,18 @@ class Pipeline:
 
 
     def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True):
+        """
+        Метод с пайплайном анализа результатов всего A/B теста. Выполняет предобработку и группировку данных.
+        Возможно посмотреть результаты A/B теста в определенных разрезах (например отдельно по новым пользователям)
+        :param groupby_col: (str), Название столбца по которму будет идти группировка данных, например по дате
+        :param metric_aggregations: (dict), Словарь следующего формата: {'metric_name': ['agg_func']},
+            например: {'transactions': 'sum'}
+        :param experiment_var_col: (str), Название столбца с параметром варианта эксперимента
+        :param groups: (iterable, optional, default=None), Список с названиями столбцов, по которым будет идти срез
+        :param show_total: (bool, optional, default=True), См. описание метода compute_results
+        :return: При groups = None возвращаются общие результаты для групп
+        """
+
         totals = None
         results = None
 
