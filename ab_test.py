@@ -80,9 +80,16 @@ class Pipeline:
         return res
 
 
-    def pipeline(self, groupby_col, groups, metric_aggregations, experiment_var_col, show_total=True):
+    def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True):
         totals = None
         results = None
+
+        if groups is None:
+            _ = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)
+            res, total = self.compute_results(_, experiment_var_col, list(metric_aggregations.keys()))
+
+            return res, total
+
         for group in groups:
 
             for _ in self.grouper(self.df, groupby_col, experiment_var_col, group, metric_aggregations):
@@ -103,4 +110,7 @@ class Pipeline:
                 for i, _t in enumerate(total.values):
                     totals.loc[(i, name), :] = _t
 
-        return results, totals
+        if show_total:
+            return results, totals
+
+        return results
