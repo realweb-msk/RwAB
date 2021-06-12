@@ -45,7 +45,6 @@ class Pipeline:
         res = pd.DataFrame(columns=['first', 'second', 'metric'])
         res = res.set_index(['first', 'second', 'metric'])
 
-
         keys_comb = combinations(dfs_vars, 2)
         vals_comb = combinations(dfs_vars.values(), 2)
 
@@ -98,7 +97,8 @@ class Pipeline:
         return res
 
 
-    def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True):
+    def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True,
+                 experiment_id=None):
         """
         Метод с пайплайном анализа результатов всего A/B теста. Выполняет предобработку и группировку данных.
         Возможно посмотреть результаты A/B теста в определенных разрезах (например отдельно по новым пользователям)
@@ -108,6 +108,7 @@ class Pipeline:
         :param experiment_var_col: (str), Название столбца с параметром варианта эксперимента
         :param groups: (iterable, optional, default=None), Список с названиями столбцов, по которым будет идти срез
         :param show_total: (bool, optional, default=True), См. описание метода compute_results
+
         :return: При groups = None возвращаются общие результаты для групп
         """
 
@@ -117,6 +118,10 @@ class Pipeline:
         if groups is None:
             _ = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)
             res, total = self.compute_results(_, experiment_var_col, list(metric_aggregations.keys()))
+
+            if experiment_id is not None:
+                res['experiment_id'] = experiment_id
+                total['experiment_id'] = experiment_id
 
             return res, total
 
@@ -139,6 +144,10 @@ class Pipeline:
 
                 for i, _t in enumerate(total.values):
                     totals.loc[(i, name), :] = _t
+
+        if experiment_id is not None:
+            results['experiment_id'] = experiment_id
+            totals['experiment_id'] = experiment_id
 
         if show_total:
             return results, totals
