@@ -4,7 +4,7 @@ from core.exceptions import InvalidDataType, InvalidInput
 import re
 
 
-def query(source, table_name, start_date, end_date, experiment_id, events=None, custom_dimensions=None,
+def query(table_name, start_date, end_date, experiment_id, events=None, custom_dimensions=None, source='ga',
           additional_dimensions=None, additional_metrics_query=None):
     """
     Функция получения данных в дефолтных разрезах из данных стриминга GA в BQ.

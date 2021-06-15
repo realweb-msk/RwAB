@@ -15,7 +15,7 @@ end = '20201230' # End date
 exp = 'qwertyEQbOY6YCfNmOvvg' # experiment_id
 events = {'kek': ['foo', 'bar']} # event dict
 cds = {'pep': [15, 'hits']} # custom dimensions dict
-query = query(1, table, start, end, exp, events=events, custom_dimensions=cds)
+query = query(table, start, end, exp, events=events, custom_dimensions=cds)
 
 r = get_from_bq(path, 'project_id', query)
 r.head()
@@ -49,7 +49,8 @@ r.head()
 from ab_test import Pipeline
 
 p = Pipeline(r)
-res, tot = p.pipeline('client_id', ['device', 'visitor_type'], {'transactionRevenue': 'sum'}, 'experimentVariant')
+res, tot = p.pipeline('client_id', {'transactionRevenue': 'sum'}, 'experimentVariant',
+                      groups=['device', 'visitor_type'])
 res.head()
 ```
 <img width="855" alt="Снимок экрана 2021-06-08 в 10 20 43" src="https://user-images.githubusercontent.com/60659176/121141022-30ade980-c843-11eb-9500-97df7ee921cd.png">
