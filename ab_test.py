@@ -50,6 +50,7 @@ class Pipeline:
 
         for df in dfs_vars.values():
             for metric in metrics:
+                qq_plot(df[metric], metric)
                 df[metric+'_normal'] = normality_test(df[metric])
 
         for names, values in zip(keys_comb, vals_comb):
@@ -108,12 +109,12 @@ class Pipeline:
         :param experiment_var_col: (str), Название столбца с параметром варианта эксперимента
         :param groups: (iterable, optional, default=None), Список с названиями столбцов, по которым будет идти срез
         :param show_total: (bool, optional, default=True), См. описание метода compute_results
-
         :return: При groups = None возвращаются общие результаты для групп
         """
 
         totals = None
         results = None
+
 
         if groups is None:
             _ = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)

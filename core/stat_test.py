@@ -1,7 +1,16 @@
 from scipy import stats as st
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
 import numpy as np
 from operator import itemgetter
 from numba import njit
+
+
+def qq_plot(data, metric):
+    sm.graphics.qqplot(data, st.norm, line='45', fit=True)
+    plt.title(f"QQ plot for {metric} with normal distribution")
+    plt.show()
+    return
 
 
 def normality_test(data, alpha=0.05, verbose=0):
@@ -16,15 +25,26 @@ def normality_test(data, alpha=0.05, verbose=0):
     if verbose > 0:
         print('p-value of Hypothesis "Input data has normal distribution:"', st.shapiro(data)[1])
 
-    if st.shapiro(data)[1] < alpha:
-        if verbose > 0:
-            print("Data is distributed normally")
-        return True
+    if len(data) < 4000:
+        if st.shapiro(data)[1] < alpha:
+            if verbose > 0:
+                print("Data is distributed normally")
+            return True
 
-    else:
+        else:
+            if verbose > 0:
+                print("Data is not distributed normally")
+            return False
+
+    if st.normaltest(data)[1] < alpha:
         if verbose > 0:
             print("Data is not distributed normally")
         return False
+
+    else:
+        if verbose > 0:
+            print("Data is distributed normally")
+        return True
 
 # @njit
 def fisher_var(a, b, alpha=0.05):
