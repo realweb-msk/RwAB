@@ -40,7 +40,7 @@ class Pipeline:
         dfs_vars = {}
 
         for i, var in enumerate(variants):
-            dfs_vars[f'df_{i}'] = grouped_data.query(f"{experiment_var_col} == @var")
+            dfs_vars[f'df_{var}'] = grouped_data.query(f"{experiment_var_col} == @var")
 
         res = pd.DataFrame(columns=['first', 'second', 'metric'])
         res = res.set_index(['first', 'second', 'metric'])
@@ -100,6 +100,7 @@ class Pipeline:
 
     def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True,
                  experiment_id=None):
+
         """
         Метод с пайплайном анализа результатов всего A/B теста. Выполняет предобработку и группировку данных.
         Возможно посмотреть результаты A/B теста в определенных разрезах (например отдельно по новым пользователям)
@@ -114,7 +115,6 @@ class Pipeline:
 
         totals = None
         results = None
-
 
         if groups is None:
             _ = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)

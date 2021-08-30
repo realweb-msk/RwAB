@@ -239,5 +239,5 @@ def z_test_ratio(successes1, successes2, trials1, trials2, alpha=0.05, verbose=0
         return True
     else:
         if verbose > 0:
-            print("Can not eject null hypothesis, ratio in groups has no statistically significant difference")
+            print("Can not Reject null hypothesis, ratio in groups has no statistically significant difference")
         return False
