@@ -97,12 +97,12 @@ def levene_var(*args, alpha=0.05, verbose=0):
     if p_levene < alpha:
         if verbose > 0:
             print("Samples do not have same variance")
-        return True
+        return False
 
     else:
         if verbose > 0:
             print("Samples have same variance")
-        return False
+        return True
 
 
 def mood_var(a, b, alpha=0.05, verbose=1):
@@ -127,12 +127,12 @@ def mood_var(a, b, alpha=0.05, verbose=1):
     if p_value < alpha:
         if verbose > 0:
             print("Samples do not have same variance")
-        return True
+        return False
 
     else:
         if verbose > 0:
             print("Samples have same variance")
-        return False
+        return True
 
 
 def independent_ttest(a, b, alpha=0.05, verbose=0, log=False, **kwargs):
