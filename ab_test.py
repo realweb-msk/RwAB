@@ -69,10 +69,12 @@ class Pipeline:
 
                     # Если дисперсии равны
                     if equal_var:
-                        res.loc[col_name, 'ttest'] = independent_ttest(df_1[metric], df_2[metric], alpha=alpha)
+                        res.loc[col_name, "test_type"] = "independent ttest"
+                        res.loc[col_name, "p_value"] = independent_ttest(df_1[metric], df_2[metric], alpha=alpha)
 
                     else:
-                        res.loc[col_name, 'mann_whitneyu'] = mann_whitneyu_test(df_1[metric], df_2[metric], alpha=alpha)
+                        res.loc[col_name, "test_type"] = "mann_whitneyu"
+                        res.loc[col_name, 'p_value'] = mann_whitneyu_test(df_1[metric], df_2[metric], alpha=alpha)
 
                 else:
                     equal_var = mood_var(df_1[metric], df_2[metric], alpha=alpha)
@@ -80,12 +82,8 @@ class Pipeline:
                     equal_median = kruskal_wallis(df_1[metric], df_2[metric])
                     res.loc[col_name, 'equal_median'] = equal_median
 
-                    res.loc[col_name, 'mann_whitneyu'] = mann_whitneyu_test(df_1[metric], df_2[metric], alpha=alpha)
-                try:
-                    res.loc[col_name, 'mann_whitneyu_log'] = mann_whitneyu_test(np.log(df_1[metric]),
-                                                                            np.log(df_2[metric]), alpha=alpha)
-                except:
-                    raise
+                    res.loc[col_name, "test_type"] = "mann_whitneyu"
+                    res.loc[col_name, 'p_value'] = mann_whitneyu_test(df_1[metric], df_2[metric], alpha=alpha)
 
         if show_total:
             total_sum = grouped_data.groupby(experiment_var_col, as_index=False)[metrics].sum()\
@@ -110,6 +108,8 @@ class Pipeline:
         :param experiment_var_col: (str), Название столбца с параметром варианта эксперимента
         :param groups: (iterable, optional, default=None), Список с названиями столбцов, по которым будет идти срез
         :param show_total: (bool, optional, default=True), См. описание метода compute_results
+        :param experiment_id: (str, optional, default=None), Возможность добавить в итоговые результаты столбец с
+        ID эксперимента
         :return: При groups = None возвращаются общие результаты для групп
         """
 
@@ -124,6 +124,10 @@ class Pipeline:
                 res['experiment_id'] = experiment_id
                 total['experiment_id'] = experiment_id
 
+            # Приводим нейминг таблиц с groups и без groups к единому виду
+            res['group'] = "No groups"
+            res = res.reset_index()
+            total['group'] = "No groups"
             return res, total
 
         for group in groups:
@@ -141,7 +145,11 @@ class Pipeline:
                     totals = totals.set_index(['cnt', 'group'])
 
                 for i, _r in enumerate(res.values):
-                    results.loc[(i, name), :] = _r
+                    try:
+                        results.loc[(i, name), :] = _r
+                    except:
+                        print(results, name, _r)
+                        return results, name, _r
 
                 for i, _t in enumerate(total.values):
                     totals.loc[(i, name), :] = _t
@@ -150,7 +158,13 @@ class Pipeline:
             results['experiment_id'] = experiment_id
             totals['experiment_id'] = experiment_id
 
+        # Приводим нейминг таблиц с groups и без groups к единому виду
+        results = results.reset_index()
+        results = results.drop(['cnt'], axis=1)
+
         if show_total:
+            totals = totals.reset_index()
+            totals = totals.drop(['cnt'], axis=1)
             return results, totals
 
         return results
