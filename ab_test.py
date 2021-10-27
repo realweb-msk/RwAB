@@ -15,16 +15,42 @@ class Pipeline:
         self.df = df
 
     @staticmethod
-    def grouper(df, groupby_col, experiment_variant_col, group, metric_aggregations):
-
-        for var in df[group].unique():
-            temp = df.query(f"{group} == '{var}'")
-            temp = temp.groupby([groupby_col, experiment_variant_col], as_index=False).agg(metric_aggregations)
-            yield var, temp
-
+    def compute_combinations(values_, max_len):
+        _res = []
+        for i in range(1, max_len + 1):
+            _res.extend([g for g in combinations(values_, i)])
+        return _res
 
     @staticmethod
-    def compute_results(grouped_data, experiment_var_col, metrics, alpha=0.05, show_total=True):
+    def get_unique_values(df, columns):
+        _unique_vals = []
+        _dict = {}
+        for col in columns:
+            uniques = df[col].unique()
+            for val in uniques:
+                _unique_vals.append(val)
+                _dict[val] = col
+
+        return _unique_vals, _dict
+
+    def grouper(self, groupby_col, experiment_variant_col, group_comb, metric_aggregations):
+        _unique_vals, _group_val_dict = self.get_unique_values(self.df, group_comb)
+        val_combinations = self.compute_combinations(_unique_vals, len(group_comb))
+
+        for comb in val_combinations:
+            query_string = ""
+            for i, val in enumerate(comb):
+                if i != 0:
+                    query_string += " and "
+                query_string += f"{_group_val_dict[val]} == '{val}'"
+
+            temp = self.df.query(query_string)
+            temp = temp.groupby([groupby_col, experiment_variant_col], as_index=False).agg(metric_aggregations)
+
+            yield comb, temp
+
+    @staticmethod
+    def compute_results(grouped_data, experiment_var_col, metrics, alpha=0.05, show_total=True, show_plots=False):
         """
         Функция для расчета попарных результатов A/B теста для групп
 
@@ -33,6 +59,7 @@ class Pipeline:
         :param metrics: (iterable), Названия столбцов с метриками, которые будут сравниваться
         :param alpha: (float, optional, default=0.05), alpha-value для статистических тестов
         :param show_total: (bool, optional, default=True), Выводить ли датафрейм с общей статистикой
+        :param show_plots: (bool, optional, default=False), Выводить ли QQ plot для нормального распределения
         :return: При show_total=True, возвращает tuple из двух датафреймов: res и tot, res - с результатами
         эксперимента, при show_total=False возвращает только res
         """
@@ -50,7 +77,8 @@ class Pipeline:
 
         for df in dfs_vars.values():
             for metric in metrics:
-                qq_plot(df[metric], metric)
+                if show_plots:
+                    qq_plot(df[metric], metric)
                 df[metric+'_normal'] = normality_test(df[metric])
 
         for names, values in zip(keys_comb, vals_comb):
@@ -95,7 +123,6 @@ class Pipeline:
 
         return res
 
-
     def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True,
                  experiment_id=None):
 
@@ -130,29 +157,42 @@ class Pipeline:
             total['group'] = "No groups"
             return res, total
 
-        for group in groups:
+        # Кол-во срезов в комбинации не может быть больше чем кол-во групп
+        max_comb_len = len(groups)
 
-            for _ in self.grouper(self.df, groupby_col, experiment_var_col, group, metric_aggregations):
-                name = _[0]
-                df_gr = _[1]
+        # Считаем разультаты для каждой возможной комбинации срезов по длинам от 1 до len(groups)
+        # Это сделано для того, чтобы итоговые результаты анализа тестов было возможно посмотреть
+        # Во всех возможных комбинациях разрезов
+        for group_comb in self.compute_combinations(groups, max_len=max_comb_len):
+            for val_comb, df_gr in self.grouper(groupby_col, experiment_var_col, group_comb, metric_aggregations):
+
                 res, total = self.compute_results(df_gr, experiment_var_col, list(metric_aggregations.keys()))
                 res = res.reset_index()
 
                 if results is None:
-                    results = pd.DataFrame(columns=np.append(['cnt', 'group'], res.columns))
-                    results = results.set_index(['cnt', 'group'])
-                    totals = pd.DataFrame(columns=np.append(['cnt', 'group'], total.columns))
-                    totals = totals.set_index(['cnt', 'group'])
+                    # Зададим в индексы максимально возможное кол-во срезов в одной группе
+                    _indx = ['cnt'] + [f'group_{i}' for i in range(max_comb_len)]
+
+                    results = pd.DataFrame(columns=np.append(_indx, res.columns))
+                    results = results.set_index(_indx)
+                    totals = pd.DataFrame(columns=np.append(_indx, total.columns))
+                    totals = totals.set_index(_indx)
 
                 for i, _r in enumerate(res.values):
                     try:
-                        results.loc[(i, name), :] = _r
+                        # Дополним пустые индексы групп как "No group"
+                        # Таких max_comb_len - len(val_com)
+                        _new_index = tuple([str(i)] + [name for name in val_comb] +
+                                         ["No group"] * (max_comb_len - len(val_comb)))
+                        results.loc[_new_index, :] = _r
                     except:
-                        print(results, name, _r)
-                        return results, name, _r
+                        print(results, val_comb, _r)
+                        raise
 
                 for i, _t in enumerate(total.values):
-                    totals.loc[(i, name), :] = _t
+                    _new_index = tuple([str(i)] + [name for name in val_comb] +
+                                         ["No group"] * (max_comb_len - len(val_comb)))
+                    totals.loc[_new_index, :] = _t
 
         if experiment_id is not None:
             results['experiment_id'] = experiment_id
