@@ -2,8 +2,6 @@ from scipy import stats as st
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 import numpy as np
-from operator import itemgetter
-from numba import njit
 
 
 def qq_plot(data, metric):
@@ -236,8 +234,8 @@ def z_test_ratio(successes1, successes2, trials1, trials2, alpha=0.05, verbose=0
     if p_value < alpha:
         if verbose > 0:
             print("Reject null hypothesis, ratio in groups has statistically significant difference")
-        return True
+        return p_value
     else:
         if verbose > 0:
             print("Can not Reject null hypothesis, ratio in groups has no statistically significant difference")
-        return False
+        return p_value

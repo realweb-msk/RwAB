@@ -4,12 +4,12 @@ from scipy.stats import beta as beta_distr
 from numba import njit
 
 
-class BayesTest():
+class BayesTest:
     """
     Класс для Байессовского АБ теста. Изначально он делался для показов и конверсий
     """
 
-    def __init__(self, impressions_ctrl, conversions_ctrl, impressions_test, conversions_test):
+    def __init__(self, conversions_ctrl, conversions_test,  impressions_ctrl, impressions_test):
         self.impressions_ctrl = impressions_ctrl
         self.conversions_ctrl = conversions_ctrl
         self.impressions_test = impressions_test
@@ -62,6 +62,9 @@ class BayesTest():
         lift = self.lift(beta_c, beta_t)
 
         prob = self.calc_prob(beta_c, beta_t)
+        if prob < 0.3:
+            prob = self.calc_prob(beta_t, beta_c)
+            lift = self.lift(beta_t, beta_c)
 
         if verbose > 0:
             print(f"Экспериментальная группа имеет лифт в {lift*100:2.2f}% с вероятностью {prob*100:2.1f}%.")

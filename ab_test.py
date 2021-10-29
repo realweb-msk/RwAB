@@ -2,6 +2,7 @@ from itertools import combinations
 import pandas as pd
 from core.stat_test import *
 import numpy as np
+from core.bayes import BayesTest
 
 
 class Pipeline:
@@ -50,7 +51,66 @@ class Pipeline:
             yield comb, temp
 
     @staticmethod
-    def compute_results(grouped_data, experiment_var_col, metrics, alpha=0.05, show_total=True, show_plots=False):
+    def compute_results_binary(grouped_data, experiment_var_col, metrics, alpha=0.05):
+        """
+        Функция для расчета резульатов A/B теста как бинарных показателей через вычисление CR для групп
+        :param grouped_data: (pandas.DataFrame), Сгруппированный датафрейм
+        :param experiment_var_col: (str), Имя столбца с вариантом эксперимента
+        :param metrics: (dict), Словарь с названиями столбцов датафрейма, для расчета CR следующей структуры:
+            {"success_col_1": "tries_col_1", "success_col_2": "tries_col_2", ...}
+            где success и tries столбцы по которым будет считаться отношение успехи/попытки
+        :param alpha: (float, optional, default=0.05), alpha-value для статистических тестов
+        :return:
+        """
+
+        variants = grouped_data[experiment_var_col].unique()
+        dfs_vars = {}
+
+        for var in variants:
+            dfs_vars[f'df_{var}'] = grouped_data.query(f"{experiment_var_col} == @var")
+
+        res = pd.DataFrame(columns=['cnt', 'first', 'second', 'metric'])
+        res = res.set_index(['cnt', 'first', 'second', 'metric'])
+
+        keys_comb = combinations(dfs_vars, 2)
+        vals_comb = combinations(dfs_vars.values(), 2)
+
+        for names, values in zip(keys_comb, vals_comb):
+            df_1 = values[0]
+            df_2 = values[1]
+
+            for succ, trial in metrics.items():
+                cur_metric = f"{succ}_{trial}_CR"
+
+                df_1[cur_metric] = df_1[succ] / df_1[trial]
+                df_2[cur_metric] = df_2[succ] / df_2[trial]
+
+                # Дополнительный индекс, для того, чтобы разные тесты записывались в разные строки DF
+                _cnt = 0
+                col_name = tuple([_cnt]) + names + tuple([cur_metric])
+                res.loc[col_name, 'mean_lift'] = lift(df_1[cur_metric], df_2[cur_metric])
+
+                # Z-test
+                res.loc[col_name, "test_type"] = "z-test"
+                res.loc[col_name, "p_value"] = z_test_ratio(df_2[succ].sum(), df_1[succ].sum(),
+                                                            df_2[trial].sum(), df_1[trial].sum())
+
+                _cnt += 1
+                col_name = tuple([_cnt]) + names + tuple([cur_metric])
+
+                # Bayes A/B statistics
+                bayes_res = BayesTest(df_1[succ].sum(), df_2[succ].sum(),
+                                                            df_1[trial].sum(), df_2[trial].sum())
+                bayes_prob, bayes_lift = bayes_res.bayes_prob()
+                res.loc[col_name, "test_type"] = "bayes_test"
+                res.loc[col_name, "mean_lift"] = bayes_lift
+                res.loc[col_name, "p_value"] = 1 - bayes_prob
+
+        return res
+
+    @staticmethod
+    def compute_results_continuous(grouped_data, experiment_var_col, metrics, alpha=0.05,
+                                   show_total=True, show_plots=False):
         """
         Функция для расчета попарных результатов A/B теста для групп
 
@@ -60,6 +120,7 @@ class Pipeline:
         :param alpha: (float, optional, default=0.05), alpha-value для статистических тестов
         :param show_total: (bool, optional, default=True), Выводить ли датафрейм с общей статистикой
         :param show_plots: (bool, optional, default=False), Выводить ли QQ plot для нормального распределения
+
         :return: При show_total=True, возвращает tuple из двух датафреймов: res и tot, res - с результатами
         эксперимента, при show_total=False возвращает только res
         """
@@ -124,7 +185,7 @@ class Pipeline:
         return res
 
     def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True,
-                 experiment_id=None):
+                 experiment_id=None, metrics_for_binary=None):
 
         """
         Метод с пайплайном анализа результатов всего A/B теста. Выполняет предобработку и группировку данных.
@@ -137,15 +198,24 @@ class Pipeline:
         :param show_total: (bool, optional, default=True), См. описание метода compute_results
         :param experiment_id: (str, optional, default=None), Возможность добавить в итоговые результаты столбец с
         ID эксперимента
-        :return: При groups = None возвращаются общие результаты для групп
+        :param metrics_for_binary: (dict, optional, default=None), Если определен, в дополнение результаты будут
+        рассчитаны в бинарной парадигме успехи/попытки
+            Словарь с названиями столбцов датафрейма, для расчета CR следующей структуры:
+            {"success_col_1": "tries_col_1", "success_col_2": "tries_col_2", ...}
+            где success и tries столбцы по которым будет считаться отношение успехи/попытки
+
+        :return: При groups = None возвращаются общие результаты для групп.
+        При show_total = True к результатам будет добавлен датафрейм с общими показателями теста
+        При непустом metrics_for_binary к результатам будет добавлен датафрейм с анализом показателей как CR
         """
 
         totals = None
         results = None
+        bin_results = None
 
         if groups is None:
             _ = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)
-            res, total = self.compute_results(_, experiment_var_col, list(metric_aggregations.keys()))
+            res, total = self.compute_results_continuous(_, experiment_var_col, list(metric_aggregations.keys()))
 
             if experiment_id is not None:
                 res['experiment_id'] = experiment_id
@@ -166,8 +236,14 @@ class Pipeline:
         for group_comb in self.compute_combinations(groups, max_len=max_comb_len):
             for val_comb, df_gr in self.grouper(groupby_col, experiment_var_col, group_comb, metric_aggregations):
 
-                res, total = self.compute_results(df_gr, experiment_var_col, list(metric_aggregations.keys()))
+                # Continuous metrics
+                res, total = self.compute_results_continuous(df_gr, experiment_var_col, list(metric_aggregations.keys()))
                 res = res.reset_index()
+
+                # Binary metrics
+                if metrics_for_binary is not None:
+                    bin_res = self.compute_results_binary(df_gr, experiment_var_col, metrics_for_binary)
+                    bin_res = bin_res.reset_index().drop("cnt", axis=1)
 
                 if results is None:
                     # Зададим в индексы максимально возможное кол-во срезов в одной группе
@@ -177,6 +253,9 @@ class Pipeline:
                     results = results.set_index(_indx)
                     totals = pd.DataFrame(columns=np.append(_indx, total.columns))
                     totals = totals.set_index(_indx)
+                    if metrics_for_binary is not None:
+                        bin_results = pd.DataFrame(columns=np.append(_indx, bin_res.columns))
+                        bin_results = bin_results.set_index(_indx)
 
                 for i, _r in enumerate(res.values):
                     try:
@@ -194,9 +273,16 @@ class Pipeline:
                                          ["No group"] * (max_comb_len - len(val_comb)))
                     totals.loc[_new_index, :] = _t
 
+                if metrics_for_binary is not None:
+                    for i, _bin in enumerate(bin_res.values):
+                        _new_index = tuple([str(i)] + [name for name in val_comb] +
+                                             ["No group"] * (max_comb_len - len(val_comb)))
+                        bin_results.loc[_new_index, :] = _bin
+
         if experiment_id is not None:
             results['experiment_id'] = experiment_id
             totals['experiment_id'] = experiment_id
+            bin_results['experiment_id'] = experiment_id
 
         # Приводим нейминг таблиц с groups и без groups к единому виду
         results = results.reset_index()
@@ -205,6 +291,14 @@ class Pipeline:
         if show_total:
             totals = totals.reset_index()
             totals = totals.drop(['cnt'], axis=1)
+            if metrics_for_binary is not None:
+                bin_results = bin_results.reset_index().drop("cnt", axis=1)
+                return results, totals, bin_results
+
             return results, totals
+
+        if metrics_for_binary is not None:
+            bin_results = bin_results.reset_index().drop("cnt", axis=1)
+            return results, totals, bin_results
 
         return results
