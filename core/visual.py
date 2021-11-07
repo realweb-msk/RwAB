@@ -7,7 +7,17 @@ import logging
 
 
 class ShowPlots:
-
+    """
+    Строит различные графики для результатов A/B теста, для первичного визуального анализа результатов.
+    Необходимо понимать, что это лишь обобщенный подход и для каждого конкретного теста необходимо по-своему
+    подходить к анализу результатов. Большая часть графиков строится как таймлайн, поэтому необходимо, чтобы данные
+    имели монотонную временную структуру.
+    :param df: pandas.DataFrame с данными теста. Примерная допустимая схема указана ниже:
+    https://github.com/realweb-msk/RwAB
+    :param date_col: Название столбца с датой и/или временем
+    :param variant_col: Название столбца с вариантом эксперимента
+    :param metrics: Название столбцов метрик из pandas.DataFrame, которые будут отображены на графиках
+    """
     def __init__(self, df, date_col, variant_col, metrics):
         self.df = df
         self.date_col = date_col
@@ -17,6 +27,14 @@ class ShowPlots:
 
     @staticmethod
     def cumulative_lift(df, date_col, variant_col, metric):
+        """
+
+        :param df:
+        :param date_col:
+        :param variant_col:
+        :param metric:
+        :return:
+        """
 
         df = df.sort_values(by=date_col)
         _vars = df[variant_col].unique()

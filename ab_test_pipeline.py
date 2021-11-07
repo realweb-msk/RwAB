@@ -186,7 +186,6 @@ class Pipeline:
 
     def pipeline(self, groupby_col, metric_aggregations, experiment_var_col, groups=None, show_total=True,
                  experiment_id=None, metrics_for_binary=None):
-
         """
         Метод с пайплайном анализа результатов всего A/B теста. Выполняет предобработку и группировку данных.
         Возможно посмотреть результаты A/B теста в определенных разрезах (например отдельно по новым пользователям)

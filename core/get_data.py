@@ -130,6 +130,7 @@ def query(table_name, start_date, end_date, experiment_id, events=None, custom_d
 
     return query_string
 
+
 def to_bq_type(type):
     """
     Функция для специализации BQ типов

@@ -46,7 +46,7 @@ r.head()
 `ab_test.Pipeline`
 
 ```python
-from ab_test import Pipeline
+from ab_test_pipeline import Pipeline
 
 p = Pipeline(r)
 res, tot = p.pipeline('client_id', {'transactionRevenue': 'sum'}, 'experimentVariant',
