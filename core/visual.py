@@ -27,15 +27,6 @@ class ShowPlots:
 
     @staticmethod
     def cumulative_lift(df, date_col, variant_col, metric):
-        """
-
-        :param df:
-        :param date_col:
-        :param variant_col:
-        :param metric:
-        :return:
-        """
-
         df = df.sort_values(by=date_col)
         _vars = df[variant_col].unique()
         vars_comb = combinations(df[variant_col].unique(), 2)
