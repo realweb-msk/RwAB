@@ -87,10 +87,10 @@ ab_test_results, summary = p.pipeline("date", {"cr": 'mean'}, 'experimentVariant
                   groups = ['deviceCategory', 'userType'])
 ab_test_results
 ```
-<img width="855" alt="Снимок экрана 2021-06-08 в 10 20 43" src="https://user-images.githubusercontent.com/60659176/121141022-30ade980-c843-11eb-9500-97df7ee921cd.png">
+Снимок экрана 2021-11-08 в 12.12.49<img width="817" alt="изображение" src="https://user-images.githubusercontent.com/60659176/140715576-3df16a9e-a624-4e7b-8629-0c3a0dc74fb8.png">
 
 Также поддерживается аналитика показателей A/B теста как бинарных метрик 
-(отношение успехи / попытки)
+(отношение успехи / попытки) при помощи стандартных статистических методов, а также Байесовой статистики.
 ```python
 p = Pipeline(data)
 continuous_res, summary, binary_res = (
@@ -101,6 +101,7 @@ continuous_res, summary, binary_res = (
 
 binary_res
 ```
-<img width="589" alt="Снимок экрана 2021-06-08 в 10 21 30" src="https://user-images.githubusercontent.com/60659176/121141124-4c18f480-c843-11eb-8bb0-25e53cdaed9e.png">
+<img width="657" alt="изображение" src="https://user-images.githubusercontent.com/60659176/140715629-8cd43534-fe1f-401f-a333-ff11c6e501f9.png">
+
 
 [comment]: <> (Больше примеров можно найти в [этом ноутбуке]&#40;https://colab.research.google.com/drive/1wFDoR-4F3lxXb8bO3SOcXlUO3w1yGvWM?usp=sharing&#41;)
