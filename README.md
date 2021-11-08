@@ -103,4 +103,4 @@ binary_res
 ```
 <img width="589" alt="Снимок экрана 2021-06-08 в 10 21 30" src="https://user-images.githubusercontent.com/60659176/121141124-4c18f480-c843-11eb-8bb0-25e53cdaed9e.png">
 
-Больше примеров можно найти в [этом ноутбуке](https://colab.research.google.com/drive/1wFDoR-4F3lxXb8bO3SOcXlUO3w1yGvWM?usp=sharing)
+[comment]: <> (Больше примеров можно найти в [этом ноутбуке]&#40;https://colab.research.google.com/drive/1wFDoR-4F3lxXb8bO3SOcXlUO3w1yGvWM?usp=sharing&#41;)
