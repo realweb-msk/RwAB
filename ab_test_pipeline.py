@@ -211,20 +211,32 @@ class Pipeline:
         totals = None
         results = None
         bin_results = None
+        res = []
 
         if groups is None:
-            _ = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)
-            res, total = self.compute_results_continuous(_, experiment_var_col, list(metric_aggregations.keys()))
+            _df_gr = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)
+            _res, total = self.compute_results_continuous(_df_gr, experiment_var_col, list(metric_aggregations.keys()))
 
             if experiment_id is not None:
-                res['experiment_id'] = experiment_id
+                _res['experiment_id'] = experiment_id
                 total['experiment_id'] = experiment_id
 
             # Приводим нейминг таблиц с groups и без groups к единому виду
-            res['group'] = "No groups"
-            res = res.reset_index()
+            _res['group'] = "No groups"
+            _res = _res.reset_index()
             total['group'] = "No groups"
-            return res, total
+            total = total.reset_index()
+
+            res.extend([_res, total])
+
+            if metrics_for_binary is not None:
+                bin_res = self.compute_results_binary(_df_gr, experiment_var_col, metrics_for_binary)
+                if experiment_id is not None:
+                    bin_res['experiment_id'] = experiment_id
+
+                res.append(bin_res)
+
+            return res
 
         # Кол-во срезов в комбинации не может быть больше чем кол-во групп
         max_comb_len = len(groups)
