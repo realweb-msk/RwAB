@@ -33,15 +33,15 @@ def normality_test(data, alpha=0.05, verbose=0):
                              f" {len(data)} samples")
 
     if len(data) < 4000:
-        if st.shapiro(data)[1] < alpha:
-            if verbose > 0:
-                print("Data is distributed normally")
-            return True
-
-        else:
+        if st.shapiro(data)[1] > alpha:
             if verbose > 0:
                 print("Data is not distributed normally")
             return False
+
+        else:
+            if verbose > 0:
+                print("Data is distributed normally")
+            return True
 
     if st.normaltest(data)[1] < alpha:
         if verbose > 0:

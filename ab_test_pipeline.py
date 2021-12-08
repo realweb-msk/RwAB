@@ -293,7 +293,8 @@ class Pipeline:
         if experiment_id is not None:
             results['experiment_id'] = experiment_id
             totals['experiment_id'] = experiment_id
-            bin_results['experiment_id'] = experiment_id
+            if bin_results:
+                bin_results['experiment_id'] = experiment_id
 
         # Приводим нейминг таблиц с groups и без groups к единому виду
         results = results.reset_index()

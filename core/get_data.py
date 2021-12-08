@@ -183,9 +183,10 @@ def to_bq(df, path_to_json_creds, project_id, bq_dataset_name, bq_table_name, cr
     client = bigquery.Client(credentials=credentials, project=project_id)
 
     # Создаем датасет
-    dataset_ref = client.dataset(bq_dataset_name)
+    # dataset_ref = client.dataset(bq_dataset_name)
+    dataset_ref = bigquery.dataset.DatasetReference(project_id, bq_dataset_name)
     dataset = bigquery.Dataset(dataset_ref)
-    if create_dataset == True:
+    if create_dataset:
         dataset = client.create_dataset(dataset)
 
     table_ref = dataset_ref.table(bq_table_name)
