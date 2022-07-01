@@ -222,9 +222,9 @@ class Pipeline:
                 total['experiment_id'] = experiment_id
 
             # Приводим нейминг таблиц с groups и без groups к единому виду
-            _res['group'] = "No groups"
+            _res['group'] = "No group"
             _res = _res.reset_index()
-            total['group'] = "No groups"
+            total['group'] = "No group"
             total = total.reset_index()
 
             res.extend([_res, total])
