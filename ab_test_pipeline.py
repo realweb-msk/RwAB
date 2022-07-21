@@ -17,6 +17,14 @@ class Pipeline:
 
     @staticmethod
     def compute_combinations(values_, max_len):
+        """
+        Зачем:
+        Input:
+            values - [] значения для комбинирования
+            max_len - максимальная длина () комбинаций
+        Output: 
+            _res - [] с ()-ами всех комбинаций, где включены комбинации длины от 1 до max_len (зачем???)
+        """
         _res = []
         for i in range(1, max_len + 1):
             _res.extend([g for g in combinations(values_, i)])
@@ -24,6 +32,15 @@ class Pipeline:
 
     @staticmethod
     def get_unique_values(df, columns):
+        """
+        Зачем:
+        Input: 
+            df, 
+            columns
+        Output: 
+            _unique_vals - уникальные значения из всех указанных columns в одном []
+            _dict - словарь формата {уникальное значение: название столбца (из columns)}
+        """
         _unique_vals = []
         _dict = {}
         for col in columns:
@@ -35,6 +52,19 @@ class Pipeline:
         return _unique_vals, _dict
 
     def grouper(self, groupby_col, experiment_variant_col, group_comb, metric_aggregations):
+        """
+        Зачем:
+        Input:
+            :param groupby_col: (str), Название столбца по которму будет идти группировка данных, например по дате
+            :param experiment_var_col: (str), Название столбца с параметром варианта эксперимента
+            group_comb - идет из комбинаций по :param groups: (iterable, optional, default=None), 
+                Список с названиями столбцов, по которым будет идти срез
+            :param metric_aggregations: (dict), Словарь следующего формата: {'metric_name': ['agg_func']},
+                например: {'transactions': 'sum'}
+        Output: 
+            comb - генератор [] комбинаций уникальных значений group_comb в df
+            temp - генератор [] датафреймов - сгруппированных df по комбинациям значений в comb
+        """
         _unique_vals, _group_val_dict = self.get_unique_values(self.df, group_comb)
         val_combinations = self.compute_combinations(_unique_vals, len(group_comb))
 
@@ -190,6 +220,7 @@ class Pipeline:
         Метод с пайплайном анализа результатов всего A/B теста. Выполняет предобработку и группировку данных.
         Возможно посмотреть результаты A/B теста в определенных разрезах (например отдельно по новым пользователям)
         :param groupby_col: (str), Название столбца по которму будет идти группировка данных, например по дате
+        Кажется, что этот параметр не должен быть
         :param metric_aggregations: (dict), Словарь следующего формата: {'metric_name': ['agg_func']},
             например: {'transactions': 'sum'}
         :param experiment_var_col: (str), Название столбца с параметром варианта эксперимента
@@ -213,6 +244,7 @@ class Pipeline:
         bin_results = None
         res = []
 
+        # если нет группировок:
         if groups is None:
             _df_gr = self.df.groupby([groupby_col, experiment_var_col], as_index=False).agg(metric_aggregations)
             _res, total = self.compute_results_continuous(_df_gr, experiment_var_col, list(metric_aggregations.keys()))
@@ -256,6 +288,8 @@ class Pipeline:
                     bin_res = self.compute_results_binary(df_gr, experiment_var_col, metrics_for_binary)
                     bin_res = bin_res.reset_index().drop("cnt", axis=1)
 
+                # Если никаких результатов пока не считали,
+                # то создаем датафрейм, куда будем затем их складывать
                 if results is None:
                     # Зададим в индексы максимально возможное кол-во срезов в одной группе
                     _indx = ['cnt'] + [f'group_{i}' for i in range(max_comb_len)]
@@ -268,6 +302,7 @@ class Pipeline:
                         bin_results = pd.DataFrame(columns=np.append(_indx, bin_res.columns))
                         bin_results = bin_results.set_index(_indx)
 
+                # Заполняем датафрейм результатов для непрерывных показателей результатами
                 for i, _r in enumerate(res.values):
                     try:
                         # Дополним пустые индексы групп как "No group"
@@ -278,18 +313,25 @@ class Pipeline:
                     except:
                         print(results, val_comb, _r)
                         raise
-
+            
+                # Заполняем датафрейм результатов для непрерывных показателей результатами
                 for i, _t in enumerate(total.values):
+                    # Дополним пустые индексы групп как "No group"
                     _new_index = tuple([str(i)] + [name for name in val_comb] +
                                          ["No group"] * (max_comb_len - len(val_comb)))
                     totals.loc[_new_index, :] = _t
 
+                # Заполняем датафрейм результатов для бинарных показателей результатами
                 if metrics_for_binary is not None:
                     for i, _bin in enumerate(bin_res.values):
+                        # Дополним пустые индексы групп как "No group"
                         _new_index = tuple([str(i)] + [name for name in val_comb] +
                                              ["No group"] * (max_comb_len - len(val_comb)))
                         bin_results.loc[_new_index, :] = _bin
 
+        # Добавляем exp_id в таблицу результатов, если это задано в вызове функции
+        # Зачем явно прописывать exp_id, если он есть в исходном датасете?????? 
+        # Почему с этой настройкой функция не работает???
         if experiment_id is not None:
             results['experiment_id'] = experiment_id
             totals['experiment_id'] = experiment_id
@@ -300,6 +342,7 @@ class Pipeline:
         results = results.reset_index()
         results = results.drop(['cnt'], axis=1)
 
+        # Если нужен тотал, то выводим результаты для непрерывных показателей и тотал
         if show_total:
             totals = totals.reset_index()
             totals = totals.drop(['cnt'], axis=1)
@@ -309,8 +352,10 @@ class Pipeline:
 
             return results, totals
 
+        # Если нужны бинарные показатели, то выводим результаты для непрерывных и бинарных покателей и тотал
         if metrics_for_binary is not None:
             bin_results = bin_results.reset_index().drop("cnt", axis=1)
             return results, totals, bin_results
 
+        # Если ни тотал, ни бинарные показатели не нужны, то выводим просто результат
         return results
