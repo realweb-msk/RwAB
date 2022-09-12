@@ -110,8 +110,8 @@ class Pipeline:
         vals_comb = combinations(dfs_vars.values(), 2)
 
         for names, values in zip(keys_comb, vals_comb):
-            df_1 = values[0]
-            df_2 = values[1]
+            df_1 = values[0].copy()
+            df_2 = values[1].copy()
 
             for succ, trial in metrics.items():
                 cur_metric = f"{succ}_{trial}_CR"
@@ -123,6 +123,7 @@ class Pipeline:
                 _cnt = 0
                 col_name = tuple([_cnt]) + names + tuple([cur_metric])
                 res.loc[col_name, 'mean_lift'] = lift(df_1[cur_metric], df_2[cur_metric])
+                res=res.sort_index()
 
                 # Z-test
                 res.loc[col_name, "test_type"] = "z-test"
