@@ -69,7 +69,21 @@ class Pipeline:
         _unique_vals, _group_val_dict = self.get_unique_values(self.df, group_comb)
         val_combinations = self.compute_combinations(_unique_vals, len(group_comb))
 
-        for comb in val_combinations:
+        # корректируем комбинации для корректной работы фильтров с единичным выбором
+        # задаем [] для скорректированного списка комбинаций
+        val_combinations_corrected = []
+        for comb in val_combinations: 
+            temp=[] # задаем [] для тех параметров, значения которых попали в комбинацию
+            # собираем этот []
+            for el in comb:
+                if _group_val_dict.get(el) is not None:
+                    temp.append(_group_val_dict.get(el))
+            # Если число элементов полученного [] равно числу его уникальных элементов,
+            if len(temp)==len(set(temp)):
+                # то комбинация корректна, добавляем в список скорректированных комбинаций
+                val_combinations_corrected.append(comb)
+
+        for comb in val_combinations_corrected:
             query_string = ""
             for i, val in enumerate(comb):
                 if i != 0:
@@ -138,7 +152,7 @@ class Pipeline:
                 bayes_prob, bayes_lift = bayes_res.bayes_prob()
                 res.loc[col_name, "test_type"] = "bayes_test"
                 res.loc[col_name, "mean_lift"] = bayes_lift
-                res.loc[col_name, "p_value"] = 1 - bayes_prob
+                res.loc[col_name, "p_value"] = bayes_prob
 
         return res
 
@@ -253,17 +267,18 @@ class Pipeline:
         # т.к. когда непрерывные показатели задавать необязательно, в нее нечего передать
         # в качестве агрегаций (4 аргумент)
         # Сначала переводим словарь с бинарными переменными в лист
-        metrics_for_binary_flatten=[] 
-        for key, value in metrics_for_binary.items():
-            metrics_for_binary_flatten.append(key)
-            metrics_for_binary_flatten.append(value)
-        # В полученном листе находим уникальные значения
-        metrics_for_binary_flatten = list(set(metrics_for_binary_flatten))
+        if metrics_for_binary is not None:
+            metrics_for_binary_flatten=[] 
+            for key, value in metrics_for_binary.items():
+                metrics_for_binary_flatten.append(key)
+                metrics_for_binary_flatten.append(value)
+            # В полученном листе находим уникальные значения
+            metrics_for_binary_flatten = list(set(metrics_for_binary_flatten))
 
-        binary_aggregations = {}
-        # Задаем всем метрикам для бинарных величин агрегацию суммой
-        for x in metrics_for_binary_flatten:
-            binary_aggregations.update({x: 'sum'})
+            binary_aggregations = {}
+            # Задаем всем метрикам для бинарных величин агрегацию суммой
+            for x in metrics_for_binary_flatten:
+                binary_aggregations.update({x: 'sum'})
         
         if (metric_aggregations is None) & (metrics_for_binary is not None):
             all_aggregations = binary_aggregations
