@@ -344,13 +344,13 @@ def update_tab_3_content(_test_name, _test_type, _test_segment_0, _test_segment_
 
 
 if __name__ == '__main__':
-    backlog_path = "../data/_test_backlog.csv"
-    res_path = "../data/_res.csv"
-    stat_res_path = "../data/_stat_results.csv"
+    backlog_path = "./data/_test_backlog.csv"
+    res_path = "./data/_res.csv"
+    stat_res_path = "./data/_stat_results.csv"
 
-    backlog_df = pd.read_csv(backlog_path)
-    res_df = pd.read_csv(res_path)
-    stat_res_df = pd.read_csv(stat_res_path)
+    backlog_df = pd.read_csv(backlog_path, sep=',')
+    res_df = pd.read_csv(res_path, sep=',')
+    stat_res_df = pd.read_csv(stat_res_path, sep=',')
 
     # We'll use backlog_df to add test names to other tables
     res_df = res_df.merge(backlog_df[["name", "experimentId"]], how="inner",

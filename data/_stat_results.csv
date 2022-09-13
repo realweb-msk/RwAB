@@ -1,0 +1,25 @@
+,deviceCategory,userType,first,second,metric,mean_lift,equal_variance,equal_median,test_type,p_value,experimentId
+0,No group,No group,df_0,df_1,transactions,-0.010923434813391322,True,False,independent ttest,0.9644096834314848,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+1,No group,No group,df_0,df_1,sessions,0.042997432910404886,True,False,independent ttest,0.8534884262868896,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+2,mobile,No group,df_0,df_1,transactions,0.10810810810810811,True,True,independent ttest,0.6970532952082408,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+3,mobile,No group,df_0,df_1,sessions,0.059338490932439626,True,True,independent ttest,0.7753286997478277,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+4,desktop,No group,df_0,df_1,transactions,-0.039925719591457756,True,False,independent ttest,0.8672970987696824,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+5,desktop,No group,df_0,df_1,sessions,0.0366280809894759,True,False,independent ttest,0.883472728685618,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+6,tablet,No group,df_0,df_1,transactions,-0.3671875,True,True,independent ttest,0.10130845216377164,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+7,tablet,No group,df_0,df_1,sessions,-0.07162041181736795,True,True,independent ttest,0.7135894792987877,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+8,No group,Returning Visitor,df_0,df_1,transactions,-0.011647606946209234,True,False,independent ttest,0.9617212868148192,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+9,No group,Returning Visitor,df_0,df_1,sessions,0.04723705093060165,True,False,independent ttest,0.8400880592414116,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+10,No group,New Visitor,df_0,df_1,transactions,0.004514672686230248,True,False,independent ttest,0.9885802684832186,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+11,No group,New Visitor,df_0,df_1,sessions,-0.0017037848363149568,True,False,independent ttest,0.9940741647638442,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+12,mobile,Returning Visitor,df_0,df_1,transactions,0.11968734733756717,True,True,independent ttest,0.6660141924220344,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+13,mobile,Returning Visitor,df_0,df_1,sessions,0.06890439791735903,True,False,independent ttest,0.7388159672398457,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+14,mobile,New Visitor,df_0,df_1,transactions,-0.028901734104046242,True,False,independent ttest,0.9266378897484832,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+15,mobile,New Visitor,df_0,df_1,sessions,0.005881139083780437,True,False,independent ttest,0.978888329084502,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+16,desktop,Returning Visitor,df_0,df_1,transactions,-0.04191287618524117,True,False,independent ttest,0.8595561743906774,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+17,desktop,Returning Visitor,df_0,df_1,sessions,0.039336149153120864,True,False,independent ttest,0.8752211431954962,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+18,desktop,New Visitor,df_0,df_1,transactions,0.015267175572519083,True,False,independent ttest,0.9626524884580083,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+19,desktop,New Visitor,df_0,df_1,sessions,-0.012760659819483348,True,False,independent ttest,0.9590109619982037,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+20,tablet,Returning Visitor,df_0,df_1,transactions,-0.4166666666666667,True,True,independent ttest,0.05083348684622664,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+21,tablet,Returning Visitor,df_0,df_1,sessions,-0.08185610010427528,True,True,independent ttest,0.6137284134824619,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+22,tablet,New Visitor,df_0,df_1,transactions,0.375,True,False,independent ttest,0.44671566183227385,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
+23,tablet,New Visitor,df_0,df_1,sessions,-0.00949367088607595,True,False,independent ttest,0.6780970306747431,2ccd4f1b7d290c28600eb2a955f80242d96ad08d11c95a09a8ef0de4cea04f6d
